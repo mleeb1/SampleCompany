@@ -1,0 +1,104 @@
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- master
+
+pool:
+  vmImage: 'windows-2019'
+
+variables:
+  BuildConfiguration: release
+  RestoreBuildProjects: '**/*.csproj'
+  system.debug: false
+  BuildPlatform: any cpu
+  AppWorkingDirectory: $(Build.Repository.LocalPath)/SampleSPA/
+  AppWebDirectory: $(AppWorkingDirectory)SampleSPA.Web/
+  AppWebApiDirectory: $(AppWorkingDirectory)SampleSPA.Api/
+  AppWebApiProject: $(AppWebApiDirectory)SampleSPA.Api.csproj
+  AppDataDirectory: $(AppWorkingDirectory)SampleSPA.Data/
+  AppDataProject: $(AppDataDirectory)SampleSPA.Data.csproj 
+
+steps:
+
+# Restore
+- task: DotNetCoreCLI@2
+  displayName: Restore
+  inputs:
+    command: restore
+    projects: '$(RestoreBuildProjects)'
+    workingDirectory: $(AppWorkingDirectory)
+
+# Build
+- script: dotnet build --configuration $(BuildConfiguration)
+  displayName: 'Build'
+  workingDirectory: $(AppWorkingDirectory)
+
+# .Net Tests
+- task: DotNetCoreCLI@2
+  displayName: '.Net Tests'
+  inputs:
+    command: 'test'
+    workingDirectory: $(AppWorkingDirectory)
+
+# Install Dependencies
+- script: |
+    npm install
+  displayName: 'Install Dependencies'
+  workingDirectory: $(AppWebDirectory)
+
+# Vue Tests
+- script: |
+    npm run test:unit
+  displayName: 'Vue Tests'
+  workingDirectory: $(AppWebDirectory)
+
+# Build assets
+- script: |
+    npm run build
+  displayName: 'Build Assets'
+  workingDirectory: $(AppWebDirectory)
+
+# e2e Tests
+- script: |
+    npm run test:ci:all
+  displayName: 'Run Cypress tests'
+  workingDirectory: $(AppWebDirectory)
+
+# TODO: Move to Release Pipeline
+# EF Data Migration - Gen SQL Script
+- task: CmdLine@2
+  displayName: 'EF Data Migration - Gen SQL Script'
+  inputs:
+    script: 'dotnet ef migrations script -p $(AppDataProject) -s $(AppWebApiProject) -o $(build.artifactstagingdirectory)/migrations/scripts.sql -i'
+    workingDirectory: $(AppDataDirectory)
+
+# EF Data Migration - Run SQL Script
+- task: SqlAzureDacpacDeployment@1
+  displayName: 'EF Data Migration - Run SQL Script'
+  inputs:
+    azureSubscription: 'Mel-SampleSPA-App - Azure'
+    AuthenticationType: 'server'
+    ServerName: 'samplespa.database.windows.net'
+    DatabaseName: 'Blogging'
+    SqlUsername: $(BloggingSqlUsername)
+    SqlPassword: $(BloggingSqlPassword)
+    deployType: 'SqlTask'
+    SqlFile: '$(build.artifactstagingdirectory)/migrations/scripts.sql'
+    IpDetectionMethod: 'AutoDetect'
+
+# Publish
+- task: DotNetCoreCLI@2
+  displayName: 'Publish'
+  inputs:
+    command: publish
+    publishWebProjects: True
+    arguments: '--configuration $(BuildConfiguration) --output "$(Build.ArtifactStagingDirectory)"'
+    workingDirectory: $(AppWebDirectory)
+
+# Publish Artifact
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact'
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)' 

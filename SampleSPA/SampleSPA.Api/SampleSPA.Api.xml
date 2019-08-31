@@ -1,0 +1,55 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>SampleSPA.Api</name>
+    </assembly>
+    <members>
+        <member name="M:SampleSPA.Api.Controllers.BlogsController.Get">
+             <response code="200">Returns a list of all blogs</response>
+             <response code="500">Failed to retrieve</response>
+             <remarks>
+             Sample request:
+            
+                 GET api/blogs
+             
+             </remarks>
+        </member>
+        <member name="M:SampleSPA.Api.Controllers.BlogsController.Get(System.Int32)">
+             <param name="id">Blog Id</param>
+             <response code="200">Returns a blog for the given Id</response>
+             <response code="500">Failed to retrieve</response>
+             <remarks>
+             Sample request:
+            
+                 GET api/blogs/5
+             
+             </remarks>
+        </member>
+        <member name="T:SampleSPA.Api.Resources.WebStrings">
+            <summary>
+              A strongly-typed resource class, for looking up localized strings, etc.
+            </summary>
+        </member>
+        <member name="P:SampleSPA.Api.Resources.WebStrings.ResourceManager">
+            <summary>
+              Returns the cached ResourceManager instance used by this class.
+            </summary>
+        </member>
+        <member name="P:SampleSPA.Api.Resources.WebStrings.Culture">
+            <summary>
+              Overrides the current thread's CurrentUICulture property for all
+              resource lookups using this strongly typed resource class.
+            </summary>
+        </member>
+        <member name="P:SampleSPA.Api.Resources.WebStrings.BlogRequired">
+            <summary>
+              Looks up a localized string similar to Blog is required.
+            </summary>
+        </member>
+        <member name="P:SampleSPA.Api.Resources.WebStrings.ValidationErrors">
+            <summary>
+              Looks up a localized string similar to Validation Errors.
+            </summary>
+        </member>
+    </members>
+</doc>
