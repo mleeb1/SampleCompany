@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@fortawesome/fontawesome-free-webfonts": "1.0.5",
-    "axios": "^0.18.1",
+    "axios": "^0.21.1",
     "bootstrap": "^4.0.0",
     "bootswatch": "4.0.0",
     "core-js": "^2.6.5",
